@@ -23,36 +23,6 @@ if (isset($_SESSION['lang']) && $_SESSION['lang'] == 'en') {
     $lang = 'en';
 }
 
-if ($level == 1) {
-    // Main menu
-    echo ($lang == 'en') ? 
-        "CON Welcome to the development of Islam\n1. Register\n2. Pay Contribution\n3. Check Your Account\n4. Change Language" :
-        "CON Murakaza neza mu iterambere rya Islam\n1. Kwiyandikisha\n2. Gutanga \n3. Kureba konte yawe\n4. Guhindura ururimi";
-} elseif ($level >= 2) {
-    switch ($input[1]) {
-        case '1':  
-            // Registration menu
-            handleRegistration($level, $input, $phoneNumber, $pdo, $lang);
-            break;
-        case '2':  
-            // Contribution payment menu
-            handleContribution($level, $input, $phoneNumber, $pdo, $lang);
-            break;
-        case '3':  
-            // Check account
-            handleAccountCheck($phoneNumber, $pdo, $lang);
-            break;
-        case '4':  
-            // Language change menu
-            handleLanguageChange($level, $input);
-            break;
-        default:  
-            echo ($lang == 'en') ? "END Invalid choice." : "END Ibyo mwahisemo sibyo mwongere mugerageze.";
-    }
-} else {
-    echo ($lang == 'en') ? "END Invalid choice." : "END Ibyo mwahisemo sibyo mwongere mugerageze.";
-}
-
 function handleRegistration($level, $input, $phoneNumber, $pdo, $lang) {
     // Check if user is already registered
     $stmt = $pdo->prepare("SELECT name FROM Users WHERE phone = ?");
@@ -347,6 +317,37 @@ function returnToMainMenu($lang) {
     echo ($lang == 'en') ?
         "CON Welcome to the development of Islam\n1. Register\n2. Pay Contribution\n3. Check Your Account\n4. Change Language" :
         "CON Murakaza neza mu iterambere rya Islam\n1. Kwiyandikisha\n2. Gutanga \n3. Kureba konte yawe\n4. Guhindura ururimi";
+}
+
+// Main menu logic
+if ($level == 1) {
+    // Main menu
+    echo ($lang == 'en') ? 
+        "CON Welcome to the development of Islam\n1. Register\n2. Pay Contribution\n3. Check Your Account\n4. Change Language" :
+        "CON Murakaza neza mu iterambere rya Islam\n1. Kwiyandikisha\n2. Gutanga \n3. Kureba konte yawe\n4. Guhindura ururimi";
+} elseif ($level >= 2) {
+    switch ($input[1]) {
+        case '1':  
+            // Registration menu
+            handleRegistration($level, $input, $phoneNumber, $pdo, $lang);
+            break;
+        case '2':  
+            // Contribution payment menu
+            handleContribution($level, $input, $phoneNumber, $pdo, $lang);
+            break;
+        case '3':  
+            // Check account
+            handleAccountCheck($phoneNumber, $pdo, $lang);
+            break;
+        case '4':  
+            // Language change menu
+            handleLanguageChange($level, $input);
+            break;
+        default:  
+            echo ($lang == 'en') ? "END Invalid choice." : "END Ibyo mwahisemo sibyo mwongere mugerageze.";
+    }
+} else {
+    echo ($lang == 'en') ? "END Invalid choice." : "END Ibyo mwahisemo sibyo mwongere mugerageze.";
 }
 
 ?>
