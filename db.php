@@ -1,11 +1,13 @@
 <?php
-// Database connection
+// Database connection details
 $host = 'babangida.mysql.database.azure.com';
 $dbname = 'babangida';
 $username = 'ibrahimbabangida50';
 $password = '@Babrahim50';
+
 // Path to the SSL certificate
-$ssl_cert = __DIR__ . '/ssl/BaltimoreCyberTrustRoot.crt.pem';
+$ssl_cert = __DIR__ . '/RMCF/BaltimoreCyberTrustRoot.crt.pem';
+
 try {
     // Enable SSL in the connection options
     $options = [
@@ -14,17 +16,10 @@ try {
     ];
 
     // Create a PDO instance with SSL
-    $pdo = new PDO("mysql:host=$host;dbname=$db", $user, $pass, $options);
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password, $options);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     echo "Connected successfully!";
 } catch (PDOException $e) {
     echo "Database connection failed: " . $e->getMessage();
-}
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
 }
 ?>
