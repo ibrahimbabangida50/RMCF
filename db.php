@@ -1,6 +1,6 @@
 <?php
 // Database connection details
-$host = 'rmcdatabaseserver.mysql.database.azure.com';
+$host = 'rmcdatabaseserver.database.windows.net.mysql.database.azure.com';
 $dbname = 'rmc';
 $username = 'ibrahimbabangida50';
 $password = '@Babrahim50';
