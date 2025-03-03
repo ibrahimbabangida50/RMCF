@@ -1,23 +1,15 @@
 <?php
 // Database connection details
-$host = 'rmcdatabaseserver.database.windows.net';
-$dbname = 'rmc';
-$username = 'ibrahimbabangida50';
-$password = '@Babrahim50';
-
-// Path to the SSL certificate
-$ssl_cert = __DIR__ . '/RMCF/BaltimoreCyberTrustRoot.crt.pem';
 try {
-    // Enable SSL in the connection options
-    $options = [
-        PDO::MYSQL_ATTR_SSL_CA => $ssl_cert,
-        PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false, // Disable server certificate verification
-    ];
-    // Create a PDO instance with SSL
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password, $options);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    echo "Connected successfully!";
-} catch (PDOException $e) {
-    echo "Database connection failed: " . $e->getMessage();
+    $conn = new PDO("sqlsrv:server = tcp:rmcdatabaseserver.database.windows.net,1433; Database = rmc", "ibrahimbabangida50", "{@Babrahim50}");
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 }
-?>
+catch (PDOException $e) {
+    print("Error connecting to SQL Server.");
+    die(print_r($e));
+}
+
+// SQL Server Extension Sample Code:
+$connectionInfo = array("UID" => "ibrahimbabangida50", "pwd" => "{@Babrahim50}", "Database" => "rmc", "LoginTimeout" => 30, "Encrypt" => 1, "TrustServerCertificate" => 0);
+$serverName = "tcp:rmcdatabaseserver.database.windows.net,1433";
+$conn = sqlsrv_connect($serverName, $connectionInfo);
