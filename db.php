@@ -5,21 +5,41 @@ $databaseName = "salama";
 $username = "ibrahimbabangida50";
 $password = "@Babrahim50";
 
-// SQL Server Extension Connection
-$connectionInfo = array(
-    "UID" => $username,
-    "PWD" => $password,
-    "Database" => $databaseName,
-    "LoginTimeout" => 30,
-    "Encrypt" => 1,
-    "TrustServerCertificate" => 0
-);
+// PDO Connection
+try {
+    $conn = new PDO(
+        "sqlsrv:server=$serverName;Database=$databaseName;Encrypt=1;TrustServerCertificate=0",
+        $username,
+        $password
+    );
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    echo "Connected successfully using PDO!";
+} catch (PDOException $e) {
+    die("Error connecting to SQL Server: " . $e->getMessage());
+}
 
-$conn = sqlsrv_connect($serverName, $connectionInfo);
+// Handle Africa's Talking request
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Get the request data
+    $data = json_decode(file_get_contents('php://input'), true);
 
-if ($conn === false) {
-    die(print_r(sqlsrv_errors(), true));
+    // Example: Save data to the database
+    try {
+        $phone = $data['phoneNumber']; // Example field from Africa's Talking
+        $text = $data['text']; // Example field from Africa's Talking
+
+        // Insert data into the Users table
+        $stmt = $conn->prepare("INSERT INTO Users (phone, name) VALUES (:phone, :name)");
+        $stmt->execute([
+            ':phone' => $phone,
+            ':name' => $text
+        ]);
+
+        echo "Data saved successfully!";
+    } catch (PDOException $e) {
+        die("Error saving data: " . $e->getMessage());
+    }
 } else {
-    echo "Connected successfully using sqlsrv_connect!";
+    echo "Invalid request method.";
 }
 ?>
