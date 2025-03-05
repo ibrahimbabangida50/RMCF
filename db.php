@@ -1,4 +1,4 @@
-check this <?php
+<?php
 // PHP Data Objects(PDO) Sample Code:
 try {
     $conn = new PDO("sqlsrv:server = tcp:rmcdatabaseserver.database.windows.net,1433; Database = salama", "ibrahimbabangida50", "{@Babrahim50}");
