@@ -1,16 +1,45 @@
 <?php
-// PHP Data Objects(PDO) Sample Code:
+// Database connection details
+$serverName = "tcp:rmcdatabaseserver.database.windows.net,1433";
+$databaseName = "salama";
+$username = "ibrahimbabangida50";
+$password = "@Babrahim50";
+
+// PDO Connection
 try {
-    $conn = new PDO("sqlsrv:server = tcp:rmcdatabaseserver.database.windows.net,1433; Database = salama", "ibrahimbabangida50", "{your_password_here}");
+    $conn = new PDO(
+        "sqlsrv:server=$serverName;Database=$databaseName;Encrypt=1;TrustServerCertificate=0",
+        $username,
+        $password
+    );
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-}
-catch (PDOException $e) {
-    print("Error connecting to SQL Server.");
-    die(print_r($e));
+    echo "Connected successfully using PDO!";
+} catch (PDOException $e) {
+    die("Error connecting to SQL Server: " . $e->getMessage());
 }
 
-// SQL Server Extension Sample Code:
-$connectionInfo = array("UID" => "ibrahimbabangida50", "pwd" => "{your_password_here}", "Database" => "salama", "LoginTimeout" => 30, "Encrypt" => 1, "TrustServerCertificate" => 0);
-$serverName = "tcp:rmcdatabaseserver.database.windows.net,1433";
-$conn = sqlsrv_connect($serverName, $connectionInfo);
+// Handle Africa's Talking request
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Log the incoming request
+    file_put_contents('request.log', print_r($_POST, true));
+
+    // Get the request data
+    $phone = $_POST['phoneNumber']; // Example field from Africa's Talking
+    $text = $_POST['text']; // Example field from Africa's Talking
+
+    // Save data to the database
+    try {
+        $stmt = $conn->prepare("INSERT INTO Users (phone, name) VALUES (:phone, :name)");
+        $stmt->execute([
+            ':phone' => $phone,
+            ':name' => $text
+        ]);
+
+        echo "Data saved successfully!";
+    } catch (PDOException $e) {
+        die("Error saving data: " . $e->getMessage());
+    }
+} else {
+    echo "Invalid request method.";
+}
 ?>
