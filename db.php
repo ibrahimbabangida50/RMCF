@@ -1,45 +1,16 @@
 <?php
-// Database connection details
-$serverName = "tcp:rmcdatabaseserver.database.windows.net,1433";
-$databaseName = "salama";
-$username = "ibrahimbabangida50";
-$password = "@Babrahim50";
-
-// PDO Connection
+// PHP Data Objects(PDO) Sample Code:
 try {
-    $conn = new PDO(
-        "sqlsrv:server=$serverName;Database=$databaseName;Encrypt=1;TrustServerCertificate=0",
-        $username,
-        $password
-    );
+    $conn = new PDO("sqlsrv:server = tcp:rmcdatabaseserver.database.windows.net,1433; Database = salama", "ibrahimbabangida50", "{@Babrahim50}");
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    echo "Connected successfully using PDO!";
-} catch (PDOException $e) {
-    die("Error connecting to SQL Server: " . $e->getMessage());
+}
+catch (PDOException $e) {
+    print("Error connecting to SQL Server.");
+    die(print_r($e));
 }
 
-// Handle Africa's Talking request
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get the request data
-    $data = json_decode(file_get_contents('php://input'), true);
-
-    // Example: Save data to the database
-    try {
-        $phone = $data['phoneNumber']; // Example field from Africa's Talking
-        $text = $data['text']; // Example field from Africa's Talking
-
-        // Insert data into the Users table
-        $stmt = $conn->prepare("INSERT INTO Users (phone, name) VALUES (:phone, :name)");
-        $stmt->execute([
-            ':phone' => $phone,
-            ':name' => $text
-        ]);
-
-        echo "Data saved successfully!";
-    } catch (PDOException $e) {
-        die("Error saving data: " . $e->getMessage());
-    }
-} else {
-    echo "Invalid request method.";
-}
+// SQL Server Extension Sample Code:
+$connectionInfo = array("UID" => "ibrahimbabangida50", "pwd" => "{@Babrahim50}", "Database" => "salama", "LoginTimeout" => 30, "Encrypt" => 1, "TrustServerCertificate" => 0);
+$serverName = "tcp:rmcdatabaseserver.database.windows.net,1433";
+$conn = sqlsrv_connect($serverName, $connectionInfo);
 ?>
