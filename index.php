@@ -4,6 +4,19 @@ require_once 'db.php';
 
 // Start session to handle language preferences
 session_start();
+try {
+    $stmt = $conn->query("SELECT * FROM Users");
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (count($users) > 0) {
+        echo "Users table accessed successfully!<br>";
+        print_r($users);
+    } else {
+        echo "No data found in the Users table.<br>";
+    }
+} catch (PDOException $e) {
+    echo "Error accessing Users table: " . $e->getMessage() . "<br>";
+}
 
 // Get the session variables
 $sessionId   = $_POST["sessionId"];
