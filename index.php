@@ -3,7 +3,7 @@
 require_once 'db.php';
 // Test insertion
 try {
-    $testPhone = "1234567890"; // Use a unique phone number for testing
+    $testPhone = "0788965797"; // Use a unique phone number for testing
     $testName = "mukamusoni";
     $testType = "Individual";
     $testClass = "Class 1";
