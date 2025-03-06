@@ -16,7 +16,7 @@ $input = explode('*', $text);
 $level = count($input);
 
 // Set default language
-$lang = 'kiny';
+//$lang = 'kiny';
 
 // Check if language is set to English
 if (isset($_SESSION['lang']) && $_SESSION['lang'] == 'en') {
