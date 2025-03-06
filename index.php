@@ -1,4 +1,5 @@
 <?php
+
 // Enable error reporting
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -36,7 +37,6 @@ $lang = $_SESSION['lang'];
 
 // Function to handle registration
 function handleRegistration($level, $input, $phoneNumber, $pdo, $lang) {
-    // Check if user is already registered
     try {
         $stmt = $pdo->prepare("SELECT name FROM Users WHERE phone = ?");
         $stmt->execute([$phoneNumber]);
@@ -49,58 +49,51 @@ function handleRegistration($level, $input, $phoneNumber, $pdo, $lang) {
             return;
         }
 
-        if ($level == 2) {
-            echo ($lang == 'en') ?
-                "CON Choose Registration Type\n1. Individual\n2. Family\n3. Institution\n4. Organization" :
-                "CON Hitamo Uwiyandikisha\n1. Umuntu ku giti cye\n2. Umuryango\n3. Ikigo\n4. Ishyirahamwe";
-        } elseif ($level == 3) {
-            echo ($lang == 'en') ? "CON Enter registrant's name" : "CON Injiza izina ry'uwiyandikisha";
-        } elseif ($level == 4) {
-            echo ($lang == 'en') ? "CON Choose your district" : "CON Akarere";
-        } elseif ($level == 5) {
-            echo ($lang == 'en') ?
-                "CON Choose Contribution Class\n1. Class 1\n2. Class 2" :
-                "CON Hitamo Ikiciro cy'umusanzu\n1. Ikiciro 1\n2. Ikiciro 2";
-        } elseif ($level == 6) {
-            $class = $input[5] ?? '';
-            if ($class == '1') {
+        switch ($level) {
+            case 2:
                 echo ($lang == 'en') ?
-                    "CON Choose amount\n1. 100000\n2. 50000\n3. 30000\n4. 20000" :
-                    "CON Hitamo amafaranga\n1. 100000\n2. 50000\n3. 30000\n4. 20000";
-            } elseif ($class == '2') {
-                echo ($lang == 'en') ?
-                    "CON Choose amount\n1. 10000\n2. 5000\n3. 3000\n4. 2000\n5. 1000" :
-                    "CON Hitamo amafaranga\n1. 10000\n2. 5000\n3. 3000\n4. 2000\n5. 1000";
-            } else {
-                echo ($lang == 'en') ? "END Invalid choice." : "END Ibyo mwahisemo sibyo mwongere mugerageze.";
-            }
-        } elseif ($level == 7) {
-            $amountOptionsClass1 = ['1' => 100000, '2' => 50000, '3' => 30000, '4' => 20000];
-            $amountOptionsClass2 = ['1' => 10000, '2' => 5000, '3' => 3000, '4' => 2000, '5' => 1000];
+                    "CON Choose Registration Type\n1. Individual\n2. Family\n3. Institution\n4. Organization" :
+                    "CON Hitamo Uwiyandikisha\n1. Umuntu ku giti cye\n2. Umuryango\n3. Ikigo\n4. Ishyirahamwe";
+                break;
+            case 3:
+                echo ($lang == 'en') ? "CON Enter registrant's name" : "CON Injiza izina ry'uwiyandikisha";
+                break;
+            case 4:
+                echo ($lang == 'en') ? "CON Choose your district" : "CON Akarere";
+                break;
+            case 5:
+                echo ($lang == 'en') ? "CON Choose Contribution Class\n1. Class 1\n2. Class 2" : "CON Hitamo Ikiciro cy'umusanzu\n1. Ikiciro 1\n2. Ikiciro 2";
+                break;
+            case 6:
+                $class = $input[5] ?? '';
+                if ($class == '1') {
+                    echo ($lang == 'en') ? "CON Choose amount\n1. 100000\n2. 50000\n3. 30000\n4. 20000" : "CON Hitamo amafaranga\n1. 100000\n2. 50000\n3. 30000\n4. 20000";
+                } elseif ($class == '2') {
+                    echo ($lang == 'en') ? "CON Choose amount\n1. 10000\n2. 5000\n3. 3000\n4. 2000\n5. 1000" : "CON Hitamo amafaranga\n1. 10000\n2. 5000\n3. 3000\n4. 2000\n5. 1000";
+                } else {
+                    echo ($lang == 'en') ? "END Invalid choice." : "END Ibyo mwahisemo sibyo mwongere mugerageze.";
+                }
+                break;
+            case 7:
+                $amountOptionsClass1 = ['1' => 100000, '2' => 50000, '3' => 30000, '4' => 20000];
+                $amountOptionsClass2 = ['1' => 10000, '2' => 5000, '3' => 3000, '4' => 2000, '5' => 1000];
+                $selectedAmount = $input[6] ?? '';
+                $class = $input[5] ?? '';
+                $amount = ($class == '1') ? $amountOptionsClass1[$selectedAmount] ?? null : $amountOptionsClass2[$selectedAmount] ?? null;
 
-            $selectedAmount = $input[6] ?? '';
-            $class = $input[5] ?? '';
-            $amount = ($class == '1') ? $amountOptionsClass1[$selectedAmount] ?? null : $amountOptionsClass2[$selectedAmount] ?? null;
-
-            if ($amount) {
-                try {
-                    // Save user to the database
+                if ($amount) {
                     $stmt = $pdo->prepare("INSERT INTO Users (phone, name, registration_type, contribution_class, monthly_amount, district) VALUES (?, ?, ?, ?, ?, ?)");
                     $stmt->execute([$phoneNumber, $input[3], $input[2], $class, $amount, $input[4]]);
                     
-                    echo ($lang == 'en') ?
-                        "END Registration successful. Thank you {$input[3]}." :
-                        "END Kwiyandikisha byagenze neza. Murakoze {$input[3]}.";
-                } catch (PDOException $e) {
-                    error_log("Registration failed: " . $e->getMessage());
-                    echo ($lang == 'en') ?
-                        "END An error occurred. Please try again." :
-                        "END Hari ikibazo cyabaye. Mwongere mugerageze.";
+                    echo ($lang == 'en') ? "END Registration successful. Thank you {$input[3]}." : "END Kwiyandikisha byagenze neza. Murakoze {$input[3]}.";
+                } else {
+                    echo ($lang == 'en') ? "END Invalid choice." : "END Ibyomwahisemo siyo mwongere mugerageze.";
                 }
-            } else {
-                echo ($lang == 'en') ? "END Invalid choice." : "END Ibyomwahisemo siyo mwongere mugerageze.";
-            }
+                break;
+            default:
+                echo ($lang == 'en') ? "END Invalid input level." : "END Urwego rw'ibyo mwanditse sibyo.";
         }
+
     } catch (PDOException $e) {
         error_log("Database error: " . $e->getMessage());
         echo ($lang == 'en') ? "END An error occurred. Please try again." : "END Hari ikibazo cyabaye. Mwongere mugerageze.";
@@ -112,7 +105,7 @@ function handleContribution($level, $input, $phoneNumber, $pdo, $lang) {
     if ($level == 2) {
         echo ($lang == 'en') ?
             "CON Pay Contribution\n1. Process Payment\n2. Sadaqh\n3. Zakat\n4. Return to Main Menu" : 
-            "CON Tanga kubikowra bikurikira \n1.Umusanzu w'ukwezi Quran na Dawa\n2. Kubaka Umusigiti w'Itunda \n3. Zakat\n4. Subira Inyuma";
+            "CON Tanga kubikowra bikurikira \n1. Umusanzu w'ukwezi Quran na Dawa\n2. Kubaka Umusigiti w'Itunda \n3. Zakat\n4. Subira Inyuma";
     } elseif ($level == 3) {
         $choice = $input[2] ?? '';
         switch ($choice) {
@@ -163,7 +156,7 @@ function handleContribution($level, $input, $phoneNumber, $pdo, $lang) {
                     "END Your Zakat al-Fitr payment of {$totalAmount} has been received. Thank you, {$donorName}. You will receive an SMS shortly." : 
                     "END Ubusabe bwanyu bwo kwishyura {$totalAmount} Bwakiriwe. Murakoze, {$donorName}. Murabona Ubutumwa bugufi.";
             } else {
-                echo ($lang == 'en') ? "END User not found. Please register first." : "END Ntabwo mwiyandikishije.Mwiyandikishe mbere.";
+                echo ($lang == 'en') ? "END User not found. Please register first." : "END Ntabwo mwiyandikishije. Mwiyandikishe mbere.";
             }
         } catch (Exception $e) {
             error_log("Zakat al-Fitr processing failed: " . $e->getMessage());
@@ -196,7 +189,7 @@ function processPayment($phoneNumber, $pdo, $lang) {
         } else {
             echo ($lang == 'en') ?
                 "END User not found. Please register first." : 
-                "END Ntabwo mwiyandikishije.Mwiyandikishe mbere..";
+                "END Ntabwo mwiyandikishije. Mwiyandikishe mbere.";
         }
     } catch (Exception $e) {
         error_log("Payment processing failed: " . $e->getMessage());
@@ -220,18 +213,16 @@ function saveSadaqh($amount, $phoneNumber, $pdo, $lang) {
         $stmt->execute([$phoneNumber]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$user) {
-            echo ($lang == 'en') ? "END User not found. Please register first." : "END Ntabwo mwiyandikishije.Mwiyandikishe mbere.";
-            return;
+        if ($user) {
+            $stmt = $pdo->prepare("INSERT INTO Sadaqh (donor_name, phone, district, amount, donation_date) VALUES (?, ?, ?, ?, CURRENT_DATE())");
+            $stmt->execute([$user['name'], $phoneNumber, $user['district'], $amount]);
+
+            echo ($lang == 'en') ?
+                "END Your request to give Sadaqh of {$amount} has been received. Thank you, {$user['name']}." :
+                "END Ubusab bwanyu bwo gutanga Sadaq bwa {$amount} bwakiriwe. Murakoze, {$user['name']}.";
+        } else {
+            echo ($lang == 'en') ? "END User not found. Please register first." : "END Ntabwo mwiyandikishije. Mwiyandikishe mbere.";
         }
-
-        // Insert Sadaqh into the database
-        $stmt = $pdo->prepare("INSERT INTO Sadaqh (donor_name, phone, district, amount, donation_date) VALUES (?, ?, ?, ?, CURRENT_DATE())");
-        $stmt->execute([$user['name'], $phoneNumber, $user['district'], $amount]);
-
-        echo ($lang == 'en') ?
-            "END Your request to give Sadaqh of {$amount} has been received. Thank you, {$user['name']}." :
-            "END Ubusab bwanyu bwo gutanga Sadaq bwa {$amount} bwakiriwe. Murakoze, {$user['name']}.";
     } catch (Exception $e) {
         error_log("Sadaqh processing failed: " . $e->getMessage());
         echo ($lang == 'en') ? "END An error occurred while processing your Sadaqh. Please try again later." : "END Hari ikibazo cyabaye mu gutanga Sadaq. Mwongere mukagerageze.";
@@ -249,14 +240,13 @@ function handleAccountCheck($phoneNumber, $pdo, $lang) {
             $stmt = $pdo->prepare("SELECT SUM(amount) AS total_paid FROM Contributions WHERE phone = ?");
             $stmt->execute([$phoneNumber]);
             $totalPaid = $stmt->fetchColumn() ?: 0;
-
             $unpaidMonths = calculateUnpaidMonths($user['monthly_amount'], $totalPaid);
 
             echo ($lang == 'en') ?
                 "END Your Account: \nName: {$user['name']}\nClass: {$user['contribution_class']}\nAmount Paid: {$totalPaid}\nRemaining Amount: {$unpaidMonths}" :
                 "END Konte yawe: \nIzina: {$user['name']}\nIcyiciro: {$user['contribution_class']}\nAmafaranga yishyuye: {$totalPaid}\nAmafaranga asigaye: {$unpaidMonths}";
         } else {
-            echo ($lang == 'en') ? "END You are not registered." : "END Ntabwo mwiyandikishije.Mwiyandikishe mbere.";
+            echo ($lang == 'en') ? "END You are not registered." : "END Ntabwo mwiyandikishije. Mwiyandikishe mbere.";
         }
     } catch (Exception $e) {
         error_log("Account check failed: " . $e->getMessage());
@@ -284,41 +274,7 @@ function handleLanguageChange($level, $input, $lang) {
 
 // Function to calculate unpaid months
 function calculateUnpaidMonths($monthlyAmount, $totalPaid) {
-    if (!is_numeric($monthlyAmount) || !is_numeric($totalPaid)) {
-        return 0;
-    }
-
-    return $monthlyAmount - $totalPaid;
-}
-
-// Function to return to main menu
-function returnToMainMenu($lang) {
-    echo ($lang == 'en') ?
-        "CON Welcome to the development of Islam\n1. Register\n2. Pay Contribution\n3. Check Your Account\n4. Change Language" :
-        "CON Murakaza neza mu iterambere rya Islam\n1. Kwiyandikisha\n2. Gutanga \n3. Kureba konte yawe\n4. Guhindura ururimi";
-}
-
-// Main menu logic
-if ($level == 1) {
-    // Main menu
-    echo ($lang == 'en') ? 
-        "CON Welcome to the development of Islam\n1.
-        echo ($lang == 'en') ?
-                "END Your Account: \nName: {$user['name']}\nClass: {$user['contribution_class']}\nAmount Paid: {$totalPaid}\nRemaining Amount: {$unpaidMonths}" :
-                "END Konte yawe: \nIzina: {$user['name']}\nIcyiciro: {$user['contribution_class']}\nAmafaranga yishyuwe: {$totalPaid}\nAmafaranga asigaye: {$unpaidMonths}";
-        } else {
-            echo ($lang == 'en') ? "END User not found. Please register first." : "END Ntabwo mwiyandikishije. Mwiyandikishe mbere.";
-        }
-    } catch (Exception $e) {
-        error_log("Account check failed: " . $e->getMessage());
-        echo ($lang == 'en') ? "END An error occurred while checking your account. Please try again later." : "END Hari ikibazo cyabaye mu kugenzura konte yawe. Mwongere mugerageze.";
-    }
-}
-
-// Function to calculate unpaid months
-function calculateUnpaidMonths($monthlyAmount, $totalPaid) {
-    $unpaidAmount = $monthlyAmount - $totalPaid;
-    return $unpaidAmount > 0 ? ceil($unpaidAmount / $monthlyAmount) : 0;
+    return ($monthlyAmount > 0) ? ceil(($monthlyAmount - $totalPaid) / $monthlyAmount) : 0;
 }
 
 // Function to return to main menu
@@ -326,6 +282,15 @@ function returnToMainMenu($lang) {
     echo ($lang == 'en') ? 
         "CON Welcome back to the main menu. Please choose an option:\n1. Registration\n2. Contribution\n3. Check Account" :
         "CON Murakaza neza ku rutonde rw'ibanze. Hitamo ikintu ushaka gukora:\n1. Kwiyandikisha\n2. Umusanzu\n3. Reba Konti";
+}
+
+// Main menu logic
+if ($level == 1) {
+    echo ($lang == 'en') ? 
+        "CON Welcome to the development of Islam\n1. Register\n2. Pay Contribution\n3. Check Your Account\n4. Change Language" :
+        "CON Murakaza neza mu iterambere rya Islam\n1. Kwiyandikisha\n2. Ishyura Umusanzu\n3. Kureba konte yawe\n4. Guhindura ururimi";
+} else {
+    // Handle additional logic based on user input
 }
 
 ?>
