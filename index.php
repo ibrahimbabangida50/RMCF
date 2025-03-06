@@ -1,23 +1,6 @@
 <?php
 // Include your database connection file
 require_once 'db.php';
-// Test insertion
-try {
-    $testPhone = "2134567890"; // Use a unique phone number for testing
-    $testName = "mukamusoni";
-    $testType = "Individual";
-    $testClass = "Class 1";
-    $testAmount = 100000;
-    $testDistrict = "cyumbati";
-
-    // Insert test data into Users table
-    $stmt = $conn->prepare("INSERT INTO Users (phone, name, registration_type, contribution_class, monthly_amount, district) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$testPhone, $testName, $testType, $testClass, $testAmount, $testDistrict]);
-
-    echo "Test data inserted successfully!<br>";
-} catch (PDOException $e) {
-    echo "Insertion failed: " . $e->getMessage();
-}
 
 // Start session to handle language preferences
 session_start();
