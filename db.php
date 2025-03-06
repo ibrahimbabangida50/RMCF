@@ -1,34 +1,14 @@
 <?php
-// Get user input from the USSD gateway
-$userInput = $_POST['text']; // Assuming the USSD gateway sends input via POST
-
 try {
-    // Connection details
-    $serverName = "tcp:babangida.database.windows.net,1433";
-    $databaseName = "baba";
-    $username = "ibrahimbabangida50";
-    $password = "@Babrahim50";
-
-    // Establish connection
-    $conn = new PDO("sqlsrv:server = $serverName; Database = $databaseName", $username, $password);
+    $conn = new PDO("sqlsrv:server = tcp:babangida.database.windows.net,1433; Database = baba", "ibrahimbabangida50", "@Babrahim50");
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    echo "Connected successfully!";
 
-    // Query using user input
-    $sql = "SELECT name FROM Users WHERE phone = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->execute([$userInput]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($user) {
-        $response = "CON User found: " . $user['name'];
-    } else {
-        $response = "END User not found.";
-    }
+    // Test query
+    $sql = "SELECT 1 AS test";
+    $stmt = $conn->query($sql);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    $response = "END Connection failed: " . $e->getMessage();
+    die();
 }
-
-// Output the USSD response
-header('Content-type: text/plain');
-echo $response;
 ?>
