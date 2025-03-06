@@ -17,6 +17,15 @@ try {
 } catch (PDOException $e) {
     echo "Error accessing Users table: " . $e->getMessage() . "<br>";
 }
+// Test insert into the Users table
+try {
+    $stmt = $conn->prepare("INSERT INTO Users (phone, name, registration_type, contribution_class, monthly_amount, district) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->execute(['2134567899', 'burindwi', 'Individual', 'Class 1', 100000, 'Test District']);
+
+    echo "Data inserted successfully!<br>";
+} catch (PDOException $e) {
+    echo "Error inserting data: " . $e->getMessage() . "<br>";
+}
 
 // Get the session variables
 $sessionId   = $_POST["sessionId"];
