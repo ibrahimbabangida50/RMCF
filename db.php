@@ -1,18 +1,9 @@
 <?php
-$connectionInfo = array(
-    "UID" => "ibrahimbabangida50", 
-    "pwd" => "@Babrahim50", 
-    "Database" => "baba", 
-    "LoginTimeout" => 30, 
-    "Encrypt" => 1, 
-    "TrustServerCertificate" => 0
-);
-$serverName = "tcp:babangida.database.windows.net,1433";
-$conn = sqlsrv_connect($serverName, $connectionInfo);
-
-if( !$conn ) {
-    die( print_r(sqlsrv_errors(), true));
-} else {
+try {
+    $conn = new PDO("sqlsrv:server = tcp:babangida.database.windows.net,1433; Database = baba","ibrahimbabangida50","@Babrahim50");
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     echo "Connection successful!";
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
 }
 ?>
