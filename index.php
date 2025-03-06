@@ -16,7 +16,7 @@ $input = explode('*', $text);
 $level = count($input);
 
 // Set default language
-//$lang = 'kiny';
+$lang = 'kiny';
 
 // Check if language is set to English
 if (isset($_SESSION['lang']) && $_SESSION['lang'] == 'en') {
@@ -180,7 +180,7 @@ function handleContribution($level, $input, $phoneNumber, $pdo, $lang) {
                 $stmt->execute([$donorName, $phoneNumber, $district,'Zakat al-Mal', $zakatAmount]);
 
                 // Execute additional USSD call for Zakat al-Mal
-                shell_exec("*182*1*1*0788965797*{$zakatAmount}#");
+                //shell_exec("*182*1*1*0788965797*{$zakatAmount}#");
 
                 echo ($lang == 'en') ? 
                     "END Your Zakat al-Mal payment of {$zakatAmount} RWF has been recorded. Thank you, {$donorName}. You will receive an SMS shortly." : 
@@ -215,7 +215,7 @@ function processPayment($phoneNumber, $pdo, $lang) {
                     "END Ubwishyu bwawe bwa {$amount} bwanditswe. Murakoze ku musanzu wanyu.";
                 
                 // Execute additional USSD call for Contributions
-                shell_exec("*182*1*1*0788965797*{$amount}#");
+                //shell_exec("*182*1*1*0788965797*{$amount}#");
             } else {
                 throw new Exception("Failed to record the transaction.");
             }
@@ -264,7 +264,7 @@ function saveSadaqh($amount, $phoneNumber, $pdo, $lang) {
             "END Ubusab bwanyu bwo gutanga Sadaq bwa {$amount} bwakiriwe. Amafranga amaze gutangwa: {$totalSadaqh}. Murakoze, {$user['name']}.";
 
         // Execute additional USSD call for Sadaqah
-        shell_exec("*182*1*1*0788965797*{$amount}#");
+       // shell_exec("*182*1*1*0788965797*{$amount}#");
 
     } catch (Exception $e) {
         error_log("Sadaqh processing failed: " . $e->getMessage());
