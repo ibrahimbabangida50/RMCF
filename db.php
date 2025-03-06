@@ -13,21 +13,5 @@ catch (PDOException $e) {
 $connectionInfo = array("UID" => "ibrahimbabangida50", "pwd" => "{@Babrahim50}", "Database" => "baba", "LoginTimeout" => 30, "Encrypt" => 1, "TrustServerCertificate" => 0);
 $serverName = "tcp:babangida.database.windows.net,1433";
 $conn = sqlsrv_connect($serverName, $connectionInfo);
-// Test insertion
-try {
-    $testPhone = "1234567890"; // Use a unique phone number for testing
-    $testName = "mukamusoni";
-    $testType = "Individual";
-    $testClass = "Class 1";
-    $testAmount = 100000;
-    $testDistrict = "cyumbati";
 
-    // Insert test data into Users table
-    $stmt = $conn->prepare("INSERT INTO Users (phone, name, registration_type, contribution_class, monthly_amount, district) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$testPhone, $testName, $testType, $testClass, $testAmount, $testDistrict]);
-
-    echo "Test data inserted successfully!<br>";
-} catch (PDOException $e) {
-    echo "Insertion failed: " . $e->getMessage();
-}
 ?>
