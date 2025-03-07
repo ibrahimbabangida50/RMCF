@@ -9,7 +9,6 @@ try {
     // Use the sqlsrv driver for Azure SQL Server
     $pdo = new PDO("sqlsrv:server=$host;Database=$dbname", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    echo "Connected successfully to Azure SQL Server!";
 } catch (PDOException $e) {
     die("Database connection failed: " . $e->getMessage());
 }
