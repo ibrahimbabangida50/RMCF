@@ -139,7 +139,7 @@ function handleContribution($level, $input, $phoneNumber, $pdo, $lang) {
     } 
     elseif ($level == 4 && $input[1] == '3' && $input[2] == '1') {  // Adjusted indices
         $numPeople = (int)($input[3] ?? 0);  // Changed from $input[4] to $input[3]
-        $totalAmount = $numPeople * 2500;
+        $totalAmount = $numPeople * 4000;
         echo ($lang == 'en') ? 
             "CON Total amount for Zakat al-Fitr is {$totalAmount}. Press 1 to Confirm" : 
             "CON Amafaranga yose ni {$totalAmount}. Kanda 1 wemeze Kwishyura";
@@ -388,17 +388,12 @@ function saveSadaqh($amount, $phoneNumber, $pdo, $lang) {
 }
 
 function handleAccountCheck($level, $input, $phoneNumber, $pdo, $lang) {
-    // Start session if not already started
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
     try {
         // Level 1 - Show account check options
         if ($level == 1) {
             echo ($lang == 'en') 
-                ? "CON Account Check\n1. Check Your Account\n2. Check Masjid Account" 
-                : "CON Kureba Konti\n1. Reba Konti yawe\n2. Reba Konti y'Umusigiti";
+                ? "CON Account Check\n1. Your Account\n2. Masjid Account" 
+                : "CON Kureba Konti\n1. Konti yawe\n2. Konti y'Umusigiti";
             return;
         }
 
@@ -407,7 +402,7 @@ function handleAccountCheck($level, $input, $phoneNumber, $pdo, $lang) {
             $choice = $input[1] ?? '';
             
             if ($choice == '1') {
-                // Check user account
+                // Check user account (unchanged)
                 $stmt = $pdo->prepare("SELECT name, contribution_class, monthly_amount FROM Users WHERE phone = ?");
                 $stmt->execute([$phoneNumber]);
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -420,8 +415,8 @@ function handleAccountCheck($level, $input, $phoneNumber, $pdo, $lang) {
                     $unpaid = max(0, $user['monthly_amount'] - $totalPaid);
                     
                     echo ($lang == 'en')
-                        ? "END Your Account:\nName: {$user['name']}\nClass: {$user['contribution_class']}\nTotal Paid: {$totalPaid}\nUnpaid Balance: {$unpaid}"
-                        : "END Konti yawe:\nIzina: {$user['name']}\nIcyiciro: {$user['contribution_class']}\nAmafaranga yishyuwe: {$totalPaid}\nAmafaranga atishyuwe: {$unpaid}";
+                        ? "END Your Account:\nName: {$user['name']}\nClass: {$user['contribution_class']}\nTotal Paid: {$totalPaid}\nUnpaid: {$unpaid}"
+                        : "END Konti yawe:\nIzina: {$user['name']}\nIcyiciro: {$user['contribution_class']}\nYishyuwe: {$totalPaid}\nAtishyuwe: {$unpaid}";
                 } else {
                     echo ($lang == 'en') 
                         ? "END You are not registered." 
@@ -431,8 +426,8 @@ function handleAccountCheck($level, $input, $phoneNumber, $pdo, $lang) {
             } 
             elseif ($choice == '2') {
                 echo ($lang == 'en') 
-                    ? "CON Enter Masjid Number:" 
-                    : "CON Andika numero y'Umusigiti:";
+                    ? "CON Enter Masjid Passcode:" 
+                    : "CON Andika passcode y'Umusigiti:";
                 return;
             }
             else {
@@ -443,163 +438,86 @@ function handleAccountCheck($level, $input, $phoneNumber, $pdo, $lang) {
             }
         }
 
-        // Level 3 - Verify masjid number and show name (request PIN)
+        // Level 3 - Handle passcode input and show report
         if ($level == 3) {
-            $masjidNumber = $input[2] ?? '';
+            $passcode = trim($input[2] ?? '');
             
-            if (empty($masjidNumber)) {
+            if (empty($passcode)) {
                 echo ($lang == 'en') 
-                    ? "END Masjid number required." 
-                    : "END Numero y'Umusigiti irakenewe.";
+                    ? "END Passcode required." 
+                    : "END Passcode irakenewe.";
                 return;
             }
 
-            // Get masjid details
-            $stmt = $pdo->prepare("SELECT masjid_name, district FROM masjid WHERE masjid_number = ?");
-            $stmt->execute([$masjidNumber]);
+            // Get masjid details using passcode
+            $stmt = $pdo->prepare("SELECT m.masjid_name, m.district 
+                                 FROM masjid m
+                                 JOIN Sadaqhformasjid s ON m.passcode = s.passcode
+                                 WHERE m.passcode = ?
+                                 LIMIT 1");
+            $stmt->execute([$passcode]);
             $masjid = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if (!$masjid) {
                 echo ($lang == 'en') 
-                    ? "END Masjid not found." 
-                    : "END Ntabwo Umusigiti wabonetse.";
+                    ? "END Masjid not found with this passcode." 
+                    : "END Ntabwo Umusigiti wabonetse na passcode iyo.";
                 return;
             }
 
-            // Store masjid info in session
-            $_SESSION['masjid_account_check'] = [
-                'number' => $masjidNumber,
-                'name' => $masjid['masjid_name'],
-                'district' => $masjid['district']
-            ];
-            
-            echo ($lang == 'en')
-                ? "CON Verify: {$masjid['masjid_name']}\nEnter PIN:" 
-                : "CON Menya neza: {$masjid['masjid_name']}\nAndika PIN:";
-            return;
-        }
-
-        // Level 4 - PIN Verification
-        if ($level == 4) {
-            // Check if we have masjid data in session
-            if (!isset($_SESSION['masjid_account_check'])) {
-                echo ($lang == 'en') 
-                    ? "END Session expired. Start again." 
-                    : "END Ubushyuhe bwaranze. Tangira nanone.";
-                return;
-            }
-
-            $pin = $input[3] ?? '';
-            $masjidData = $_SESSION['masjid_account_check'];
-            
-            if (empty($pin)) {
-                echo ($lang == 'en') 
-                    ? "END PIN required." 
-                    : "END PIN irakenewe.";
-                unset($_SESSION['masjid_account_check']);
-                return;
-            }
-
-            // Verify PIN against the specific masjid
-            $stmt = $pdo->prepare("SELECT 1 FROM masjid WHERE masjid_number = ? AND pin = ?");
-            $stmt->execute([$masjidData['number'], $pin]);
-            
-            if (!$stmt->fetchColumn()) {
-                echo ($lang == 'en') 
-                    ? "END Invalid PIN." 
-                    : "END PIN ntabwo ari yo.";
-                unset($_SESSION['masjid_account_check']);
-                return;
-            }
-
-            // Store verification status and show confirmation message
-            $_SESSION['masjid_account_check']['verified'] = true;
-            
-            echo ($lang == 'en')
-                ? "CON Verified: {$masjidData['name']}\nPress 1 to view account" 
-                : "CON Byemejwe: {$masjidData['name']}\nKanda 1 kureba konte";
-            return;
-        }
-
-        // Level 5 - Show account details after verification
-        if ($level == 5) {
-            // Check verification status
-            if (!isset($_SESSION['masjid_account_check']['verified'])) {
-                echo ($lang == 'en') 
-                    ? "END Verification required. Start again." 
-                    : "END Byemezo bikenewe. Tangira nanone.";
-                unset($_SESSION['masjid_account_check']);
-                return;
-            }
-
-            $masjidData = $_SESSION['masjid_account_check'];
-            $userChoice = $input[4] ?? ''; // Get the option (should be '1')
-            
-            if ($userChoice != '1') {
-                echo ($lang == 'en') 
-                    ? "END Invalid option selected." 
-                    : "END Ibyo wahisemo ntibikunze.";
-                unset($_SESSION['masjid_account_check']);
-                return;
-            }
-
-            // Get comprehensive contribution report
+            // Get masjid account summary using passcode
             $stmt = $pdo->prepare("SELECT 
                                     SUM(amount) as total_amount,
-                                    COUNT(*) as transaction_count,
+                                    COUNT(*) as transactions,
                                     MAX(donation_date) as last_donation
                                   FROM Sadaqhformasjid 
-                                  WHERE masjid_number = ?");
-            $stmt->execute([$masjidData['number']]);
+                                  WHERE passcode = ?");
+            $stmt->execute([$passcode]);
             $report = $stmt->fetch(PDO::FETCH_ASSOC);
             
-            $totalAmount = $report['total_amount'] ? number_format($report['total_amount']) : 0;
-            $transactionCount = $report['transaction_count'] ?? 0;
-            $lastDonation = $report['last_donation'] ? date('j M Y', strtotime($report['last_donation'])) : ($lang == 'en' ? 'Never' : 'Nta bushyinguro');
+            $total = $report['total_amount'] ? number_format($report['total_amount']) : '0';
+            $count = $report['transactions'] ?? '0';
+            $last = $report['last_donation'] ? date('d/m/Y', strtotime($report['last_donation'])) : 
+                  ($lang == 'en' ? 'Never' : 'Nta bushyinguro');
             
             if ($lang == 'en') {
-                $response = "END Masjid Account:\n";
-                $response .= "Name: {$masjidData['name']}\n";
-                $response .= "District: {$masjidData['district']}\n";
-                $response .= "Total Received: {$totalAmount} RWF\n";
-                $response .= "Transaction Count: {$transactionCount}\n";
-                $response .= "Last Donation: {$lastDonation}";
+                $response = "END Masjid Account Report\n";
+                $response .= "Name: {$masjid['masjid_name']}\n";
+                $response .= "District: {$masjid['district']}\n";
+                $response .= "Total Received: {$total} RWF\n";
+                $response .= "Transactions: {$count}\n";
+                $response .= "Last Donation: {$last}";
             } else {
-                $response = "END Konte y'Umusigiti:\n";
-                $response .= "Izina: {$masjidData['name']}\n";
-                $response .= "Akarere: {$masjidData['district']}\n";
-                $response .= "Amafaranga yose: {$totalAmount} RWF\n";
-                $response .= "Ingano y'amafaranga: {$transactionCount}\n";
-                $response .= "Ubutumwa bwa nyuma: {$lastDonation}";
+                $response = "END Raporo y'Konti y'Umusigiti\n";
+                $response .= "Izina: {$masjid['masjid_name']}\n";
+                $response .= "Akarere: {$masjid['district']}\n";
+                $response .= "Yakiriye: {$total} RWF\n";
+                $response .= "Ingano: {$count}\n";
+                $response .= "Uwa nyuma: {$last}";
             }
             
             echo $response;
-            unset($_SESSION['masjid_account_check']);
             return;
         }
 
         // Fallback for invalid flows
         echo ($lang == 'en') 
-            ? "END Invalid menu option. Please start again." 
-            : "END Ibyo wahisemo ntibikunze. Tangira nanone.";
+            ? "END Invalid menu option." 
+            : "END Ibyo wahisemo ntibikunze.";
             
     } catch (PDOException $e) {
-        error_log("Database error in account check: " . $e->getMessage());
+        error_log("Database error: " . $e->getMessage());
         echo ($lang == 'en') 
-            ? "END System error occurred. Please try again later." 
-            : "END Hari ikosa ry'ikoranabuhanga. Mwongere mukagerageze.";
+            ? "END System error occurred." 
+            : "END Hari ikosa ry'ikoranabuhanga.";
     } catch (Exception $e) {
-        error_log("General error in account check: " . $e->getMessage());
+        error_log("Error: " . $e->getMessage());
         echo ($lang == 'en') 
-            ? "END An error occurred. Please try again." 
-            : "END Hari ikibazo cyabaye. Mwongere mugerageze.";
-    } finally {
-        // Ensure session data is cleaned up if still exists
-        if (isset($_SESSION['masjid_account_check'])) {
-            unset($_SESSION['masjid_account_check']);
-        }
+            ? "END Operation failed." 
+            : "END Ntibyakunze.";
     }
 }
+
 function calculateUnpaidMonths($monthlyAmount, $totalPaid) {
     if ($monthlyAmount <= 0) return 0;
     return max(0, $monthlyAmount - $totalPaid);
